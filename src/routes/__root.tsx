@@ -1,8 +1,6 @@
 import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TanStackDevtools } from '@tanstack/react-devtools';
-
-import { Outlet } from '@tanstack/react-router';
 import { getLocale } from '@/paraglide/runtime';
 import appCss from '../styles.css?url';
 
@@ -43,6 +41,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   }),
 
   shellComponent: RootDocument,
+  notFoundComponent: () => <div className="p-4">Page not found</div>,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -53,7 +52,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <Outlet />
         <TanStackDevtools
           config={{
             position: 'bottom-right',

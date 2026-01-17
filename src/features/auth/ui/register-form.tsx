@@ -21,7 +21,7 @@ const registerSchema = z
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
     orgName: z.string().min(2, 'Organization name must be at least 2 characters'),
-    firstName: z.string().optional(),
+    firstName: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -50,7 +50,7 @@ export function RegisterForm() {
         const res = await api.post('auth/register', { json: dataToSend }).json<any>();
         localStorage.setItem('accessToken', res.accessToken);
         toast.success('Registration successful! Welcome to TezDoc.');
-        navigate({ to: '/' });
+        navigate({ to: '/dashboard' });
       } catch (error) {
         toast.error('Failed to register. Please try again.');
         console.error(error);
@@ -86,7 +86,9 @@ export function RegisterForm() {
                   placeholder="Acme Corp"
                 />
                 {field.state.meta.errors ? (
-                  <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors.map((e: any) => e.message || e).join(', ')}
+                  </p>
                 ) : null}
               </div>
             )}
@@ -106,7 +108,9 @@ export function RegisterForm() {
                   placeholder="John Doe"
                 />
                 {field.state.meta.errors ? (
-                  <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors.map((e: any) => e.message || e).join(', ')}
+                  </p>
                 ) : null}
               </div>
             )}
@@ -126,7 +130,9 @@ export function RegisterForm() {
                   placeholder="you@example.com"
                 />
                 {field.state.meta.errors ? (
-                  <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors.map((e: any) => e.message || e).join(', ')}
+                  </p>
                 ) : null}
               </div>
             )}
@@ -146,7 +152,9 @@ export function RegisterForm() {
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors ? (
-                  <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors.map((e: any) => e.message || e).join(', ')}
+                  </p>
                 ) : null}
               </div>
             )}
@@ -166,7 +174,9 @@ export function RegisterForm() {
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors ? (
-                  <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors.map((e: any) => e.message || e).join(', ')}
+                  </p>
                 ) : null}
               </div>
             )}

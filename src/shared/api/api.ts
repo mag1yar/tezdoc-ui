@@ -1,7 +1,7 @@
 import ky from 'ky';
 
 export const api = ky.create({
-  prefixUrl: 'http://localhost:3000', // Будет заменено на env переменную
+  prefixUrl: 'http://localhost:4000/api',
   headers: {
     'Content-Type': 'application/json',
   },
