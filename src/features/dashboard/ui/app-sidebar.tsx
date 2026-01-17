@@ -94,9 +94,9 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link to="/">
+                  <Link to="/dashboard/templates">
                     <FileText />
-                    <span>Documents</span>
+                    <span>Шаблоны</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
