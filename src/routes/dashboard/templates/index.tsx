@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { Textarea } from '@/shared/ui/textarea';
 
 export const Route = createFileRoute('/dashboard/templates/')({
+  ssr: false,
   component: TemplatesPage,
 });
 
@@ -71,7 +72,7 @@ function TemplatesPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Шаблоны</h1>

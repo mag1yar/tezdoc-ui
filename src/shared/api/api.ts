@@ -8,15 +8,17 @@ export const api = ky.create({
   hooks: {
     beforeRequest: [
       (request) => {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-          request.headers.set('Authorization', `Bearer ${token}`);
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem('accessToken');
+          if (token) {
+            request.headers.set('Authorization', `Bearer ${token}`);
+          }
         }
       },
     ],
     afterResponse: [
       async (_request, _options, response) => {
-        if (response.status === 401) {
+        if (response.status === 401 && typeof window !== 'undefined') {
           // Логика разлогина или рефреша
           localStorage.removeItem('accessToken');
           window.location.href = '/auth/login';
