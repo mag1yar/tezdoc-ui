@@ -137,3 +137,17 @@ code {
     @apply bg-background text-foreground;
   }
 }
+
+/* Gap styling as requested by user */
+.rm-pagination-gap {
+  border-left: unset !important;
+  border-right: unset !important;
+  background-color: var(--color-slate-100) !important;
+}
+
+/* Dark mode gap */
+.dark .rm-pagination-gap {
+  border-left: unset !important;
+  border-right: unset !important;
+  background-color: var(--color-slate-900) !important;
+}
