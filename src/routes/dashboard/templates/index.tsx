@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
@@ -15,11 +15,11 @@ import {
 } from '@/shared/ui/dialog';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
-import { Textarea } from '@/shared/ui/textarea';
 import { Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { Textarea } from '@/shared/ui/textarea';
 
-export const Route = createFileRoute('/dashboard/templates')({
+export const Route = createFileRoute('/dashboard/templates/')({
   component: TemplatesPage,
 });
 
@@ -92,17 +92,24 @@ function TemplatesPage() {
       ) : templates && templates.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {templates.map((template) => (
-            <Card key={template.id} className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle>{template.name}</CardTitle>
-                {template.description && <CardDescription>{template.description}</CardDescription>}
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Обновлено: {new Date(template.updatedAt).toLocaleDateString('ru-RU')}
-                </p>
-              </CardContent>
-            </Card>
+            <Link
+              key={template.id}
+              to="/dashboard/templates/$templateId"
+              params={{ templateId: template.id }}>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle>{template.name}</CardTitle>
+                  {template.description && (
+                    <CardDescription>{template.description}</CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Обновлено: {new Date(template.updatedAt).toLocaleDateString('ru-RU')}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       ) : (
