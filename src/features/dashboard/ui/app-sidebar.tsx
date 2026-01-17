@@ -21,7 +21,11 @@ import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import { ChevronsUpDown, FileText, Settings, Home, Plus } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
+import { Route } from '@/routes/dashboard';
+
 export function AppSidebar() {
+  const { user } = Route.useRouteContext();
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -33,10 +37,14 @@ export function AppSidebar() {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <div className="font-bold">TD</div>
+                    <div className="font-bold">
+                      {user.organization?.name?.[0].toUpperCase() || 'T'}
+                    </div>
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold">TezDoc Inc.</span>
+                    <span className="truncate font-semibold">
+                      {user.organization?.name || 'No Org'}
+                    </span>
                     <span className="truncate text-xs">Free Plan</span>
                   </div>
                   <ChevronsUpDown className="ml-auto" />
@@ -103,11 +111,13 @@ export function AppSidebar() {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                    <AvatarFallback className="rounded-lg">
+                      {user.email[0].toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold">User</span>
-                    <span className="truncate text-xs">user@example.com</span>
+                    <span className="truncate font-semibold">{user.firstName || 'User'}</span>
+                    <span className="truncate text-xs">{user.email}</span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
