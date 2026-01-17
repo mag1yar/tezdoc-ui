@@ -87,7 +87,9 @@ export function LoginForm() {
                   placeholder="you@example.com"
                 />
                 {field.state.meta.errors ? (
-                  <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors.map((e: any) => e.message || e).join(', ')}
+                  </p>
                 ) : null}
               </div>
             )}
@@ -106,7 +108,9 @@ export function LoginForm() {
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors ? (
-                  <p className="text-sm text-red-500">{field.state.meta.errors.join(', ')}</p>
+                  <p className="text-sm text-red-500">
+                    {field.state.meta.errors.map((e: any) => e.message || e).join(', ')}
+                  </p>
                 ) : null}
               </div>
             )}

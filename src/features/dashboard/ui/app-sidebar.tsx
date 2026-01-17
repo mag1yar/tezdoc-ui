@@ -21,10 +21,20 @@ import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import { ChevronsUpDown, FileText, Settings, Home, Plus } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 
+import { logoutFn } from '@/features/auth/server';
+import { useRouter } from '@tanstack/react-router';
+
 import { Route } from '@/routes/dashboard';
 
 export function AppSidebar() {
   const { user } = Route.useRouteContext();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logoutFn();
+    await router.invalidate();
+    await router.navigate({ to: '/auth/login' });
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -127,7 +137,7 @@ export function AppSidebar() {
                 side="bottom"
                 align="end"
                 sideOffset={4}>
-                <DropdownMenuItem>Log out</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

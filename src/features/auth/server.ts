@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
+// import { redirect } from '@tanstack/react-router';
 import { useAppSession } from '@/shared/lib/session';
 import ky from 'ky';
 
@@ -51,7 +51,7 @@ export const loginFn = createServerFn({ method: 'POST' })
 export const logoutFn = createServerFn({ method: 'POST' }).handler(async () => {
   const session = await useAppSession();
   await session.clear();
-  throw redirect({ to: '/auth/login' });
+  return { success: true };
 });
 
 export const userFn = createServerFn({ method: 'GET' }).handler(async () => {
