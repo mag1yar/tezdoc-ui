@@ -138,16 +138,95 @@ code {
   }
 }
 
-/* Gap styling as requested by user */
-.rm-pagination-gap {
-  border-left: unset !important;
-  border-right: unset !important;
-  background-color: var(--color-slate-100) !important;
-}
+.tiptap {
+  :first-child {
+    @apply mt-0;
+  }
 
-/* Dark mode gap */
-.dark .rm-pagination-gap {
-  border-left: unset !important;
-  border-right: unset !important;
-  background-color: var(--color-slate-900) !important;
+  /* Lists */
+  ul {
+    @apply list-disc;
+  }
+  ol {
+    @apply list-decimal;
+  }
+
+  ul,
+  ol {
+    @apply px-4 py-0 my-5 ml-6;
+
+    li {
+      @apply mt-2;
+    }
+
+    li p {
+      @apply my-1;
+    }
+  }
+
+  /* Headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply leading-tight mt-8 mb-4 wrap-break-word tracking-tight font-semibold;
+    text-wrap: pretty;
+  }
+
+  h1 {
+    @apply text-4xl font-extrabold mt-10 leading-none;
+  }
+
+  h2 {
+    @apply text-3xl font-bold mt-8;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold;
+  }
+
+  h4 {
+    @apply text-xl;
+  }
+
+  h5 {
+    @apply text-lg;
+  }
+
+  h6 {
+    @apply text-base;
+  }
+
+  /* Code inline */
+  code {
+    @apply bg-muted text-foreground rounded px-1.5 py-1 text-sm font-mono;
+  }
+
+  /* Code block */
+  pre {
+    @apply bg-muted text-foreground border border-border rounded-lg p-3 my-6 font-mono;
+
+    code {
+      @apply bg-transparent p-0 text-xs;
+      color: inherit;
+    }
+  }
+
+  /* Blockquote */
+  blockquote {
+    @apply border-l-4 border-primary pl-4 my-6 italic text-muted-foreground;
+  }
+
+  /* Horizontal Rule */
+  hr {
+    @apply border-none border-t border-border my-8;
+  }
+
+  /* Global Placeholder */
+  p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground float-left h-0 pointer-events-none;
+    content: attr(data-placeholder);
+  }
 }

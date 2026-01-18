@@ -1,26 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/shared/api/api';
+
 import { Editor } from '@/shared/ui/editor';
-import { Loader2, Save, Settings } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { SidebarTrigger } from '@/shared/ui/sidebar';
-import { Separator } from '@/shared/ui/separator';
 import { SmartBreadcrumbs } from '@/shared/ui/smart-breadcrumbs';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/shared/ui/dialog';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Textarea } from '@/shared/ui/textarea';
 
 import { Template } from '@/entities/template/model/types';
 import { templateQueries } from '@/entities/template';
@@ -42,13 +29,14 @@ export const Route = createFileRoute('/dashboard/templates/$templateId/')({
   component: TemplateEditorPage,
 });
 
+import { TemplateSettingsDialog } from '@/features/template-settings';
+
 function TemplateEditorPage() {
   const { templateId } = Route.useParams();
-  const queryClient = useQueryClient();
-  const [content, setContent] = useState<any>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const [settingsForm, setSettingsForm] = useState({ name: '', description: '' });
+  const queryClient = useQueryClient();
+
+  const [content, setContent] = useState<any>(null);
 
   const { data: latestTemplate, isLoading } = useQuery(templateQueries.detail(templateId));
 
@@ -61,27 +49,14 @@ function TemplateEditorPage() {
     ) {
       setContent(latestTemplate.versions[0].content);
     }
-    // Sync settings form
-    if (latestTemplate) {
-      setSettingsForm({
-        name: latestTemplate.name,
-        description: latestTemplate.description || '',
-      });
-    }
   }, [latestTemplate, content]);
 
   const updateMutation = useMutation({
-    mutationFn: async (data: Partial<Template> & { content?: any }) => {
-      return await api
-        .patch(`templates/${templateId}`, {
-          json: data,
-        })
-        .json();
-    },
+    mutationFn: (data: Partial<Template> & { content?: any }) =>
+      templateQueries.update({ id: templateId, data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: templateQueries.detail(templateId).queryKey });
       toast.success('Сохранено');
-      setIsSettingsOpen(false);
     },
     onError: () => {
       toast.error('Ошибка сохранения');
@@ -92,13 +67,6 @@ function TemplateEditorPage() {
     if (content) {
       updateMutation.mutate({ content });
     }
-  };
-
-  const handleSettingsSave = () => {
-    updateMutation.mutate({
-      name: settingsForm.name,
-      description: settingsForm.description,
-    });
   };
 
   if (isLoading || !latestTemplate) {
@@ -113,65 +81,12 @@ function TemplateEditorPage() {
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       <div className="flex items-center justify-between border-b px-4 py-2 bg-background z-20 sticky top-0">
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          <div className="flex items-center gap-2 shrink-0">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-          </div>
-          <div className="flex flex-col min-w-0 flex-1">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground grow">
-              <SmartBreadcrumbs />
-            </div>
-          </div>
+          <SidebarTrigger className="-ml-1" />
+          <SmartBreadcrumbs />
         </div>
         <div className="flex gap-2 shrink-0">
-          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="mr-2 h-4 w-4" />
-                Настройки
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Настройки шаблона</DialogTitle>
-                <DialogDescription>Измените название и описание шаблона.</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Название
-                  </Label>
-                  <Input
-                    id="name"
-                    value={settingsForm.name}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
-                    Описание
-                  </Label>
-                  <Textarea
-                    id="description"
-                    value={settingsForm.description}
-                    onChange={(e) =>
-                      setSettingsForm({ ...settingsForm, description: e.target.value })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleSettingsSave} disabled={updateMutation.isPending}>
-                  {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Сохранить
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {updateMutation.isPending && !isSettingsOpen ? (
+          <TemplateSettingsDialog template={latestTemplate} />
+          {updateMutation.isPending ? (
             <Button disabled size="sm">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Сохранение...
@@ -185,9 +100,7 @@ function TemplateEditorPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <Editor content={content} onChange={(json) => setContent(json)} className="h-full" />
-      </div>
+      <Editor content={content} onChange={setContent} className="h-full" />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { api } from '@/shared/api/api';
 import { templateSchema } from '../model/schemas';
+import { Template } from '../model/types';
 import { z } from 'zod';
 
 export const templateQueries = {
@@ -28,4 +29,7 @@ export const templateQueries = {
 
   create: (data: { name: string; description?: string }) =>
     api.post('templates', { json: data }).json<z.infer<typeof templateSchema>>(),
+
+  update: ({ id, data }: { id: string; data: Partial<Template> & { content?: any } }) =>
+    api.patch(`templates/${id}`, { json: data }).json<Template>(),
 };
