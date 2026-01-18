@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
+import { useEffect } from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { PaginationPlus } from 'tiptap-pagination-plus';
@@ -39,6 +40,31 @@ export function Editor({ content, onChange, className, editable = true }: Editor
       onChange(editor.getJSON());
     },
   });
+
+  // Sync content updates from parent (e.g. async data load)
+  useEffect(() => {
+    if (editor && content && !editor.isDestroyed) {
+      // Check if content is actually different to avoid cursor jumps/loops
+      // Simple check: if editor is empty but content is provided
+      if (editor.isEmpty) {
+        editor.commands.setContent(content);
+        return;
+      }
+
+      // Deep comparison could be expensive, but for now lets trust the Parent
+      // to not pass us 'old' content during typing if we called onChange.
+      // However, to be safe, we can try to only update if JSON string differs significantly
+      // or just assume if content changed externally it's a new load.
+
+      // Current Safe Strategy: Only update if the stringified JSON differs.
+      const currentContent = editor.getJSON();
+      if (JSON.stringify(currentContent) !== JSON.stringify(content)) {
+        // Save cursor position? Tiptap setContent might reset it.
+        // For async load (user not typing), it is fine.
+        editor.commands.setContent(content);
+      }
+    }
+  }, [content, editor]);
 
   if (!editor) return null;
 
