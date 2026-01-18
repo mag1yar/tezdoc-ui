@@ -229,4 +229,39 @@ code {
     @apply text-muted-foreground float-left h-0 pointer-events-none;
     content: attr(data-placeholder);
   }
+
+  /* Images */
+  img {
+    @apply max-w-full h-auto rounded-lg border border-border my-4;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
+    &.ProseMirror-selectednode {
+      @apply ring-2 ring-primary ring-offset-2;
+    }
+  }
+
+  /* Tables */
+  table {
+    @apply border-collapse table-fixed w-full my-4 overflow-hidden rounded-lg border border-border;
+
+    td,
+    th {
+      @apply border border-border p-2 relative align-top box-border bg-background;
+      min-width: 1em;
+
+      &.selectedCell:after {
+        @apply bg-primary/20 content-[''] absolute inset-0 pointer-events-none z-10;
+      }
+    }
+
+    th {
+      @apply font-bold bg-muted text-left;
+    }
+
+    .column-resize-handle {
+      @apply bg-primary bottom-0 -right-0.5 pointer-events-none absolute top-0 w-1 z-20;
+    }
+  }
 }

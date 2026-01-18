@@ -11,13 +11,29 @@ import {
   Undo,
   Redo,
   Code,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Table as TableIcon,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Toggle } from '@/shared/ui/toggle';
 import { Button } from '@/shared/ui/button';
 import { Separator } from '@/shared/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/shared/ui/dropdown-menu';
+import { useState } from 'react';
 
 export function EditorToolbar() {
   const { editor } = useCurrentEditor();
+  const [imageUrl, setImageUrl] = useState('');
+  const [showImageDialog, setShowImageDialog] = useState(false);
 
   const {
     canUndo,
@@ -31,6 +47,10 @@ export function EditorToolbar() {
     isOrderedList,
     isBlockquote,
     isCode,
+    isAlignLeft,
+    isAlignCenter,
+    isAlignRight,
+    isAlignJustify,
   } = useEditorState({
     editor: editor!,
     selector: ({ editor }) => {
@@ -44,6 +64,10 @@ export function EditorToolbar() {
         isOrderedList: editor.isActive('orderedList'),
         isBlockquote: editor.isActive('blockquote'),
         isCode: editor.isActive('code'),
+        isAlignLeft: editor.isActive({ textAlign: 'left' }),
+        isAlignCenter: editor.isActive({ textAlign: 'center' }),
+        isAlignRight: editor.isActive({ textAlign: 'right' }),
+        isAlignJustify: editor.isActive({ textAlign: 'justify' }),
         canUndo: editor.can().chain().focus().undo().run(),
         canRedo: editor.can().chain().focus().redo().run(),
       };
@@ -51,6 +75,14 @@ export function EditorToolbar() {
   });
 
   if (!editor) return null;
+
+  const insertImage = () => {
+    if (imageUrl) {
+      editor.chain().focus().setImage({ src: imageUrl }).run();
+      setImageUrl('');
+      setShowImageDialog(false);
+    }
+  };
 
   return (
     <div className="border-b bg-background p-2 flex flex-wrap gap-2 items-center sticky top-0 z-10 w-full">
@@ -72,6 +104,12 @@ export function EditorToolbar() {
           pressed={isStrike}
           onPressedChange={() => editor.chain().focus().toggleStrike().run()}>
           <Strikethrough className="h-4 w-4" />
+        </Toggle>
+        <Toggle
+          size="sm"
+          pressed={isCode}
+          onPressedChange={() => editor.chain().focus().toggleCode().run()}>
+          <Code className="h-4 w-4" />
         </Toggle>
       </div>
 
@@ -97,6 +135,35 @@ export function EditorToolbar() {
       <div className="flex items-center gap-1">
         <Toggle
           size="sm"
+          pressed={isAlignLeft}
+          onPressedChange={() => editor.chain().focus().setTextAlign('left').run()}>
+          <AlignLeft className="h-4 w-4" />
+        </Toggle>
+        <Toggle
+          size="sm"
+          pressed={isAlignCenter}
+          onPressedChange={() => editor.chain().focus().setTextAlign('center').run()}>
+          <AlignCenter className="h-4 w-4" />
+        </Toggle>
+        <Toggle
+          size="sm"
+          pressed={isAlignRight}
+          onPressedChange={() => editor.chain().focus().setTextAlign('right').run()}>
+          <AlignRight className="h-4 w-4" />
+        </Toggle>
+        <Toggle
+          size="sm"
+          pressed={isAlignJustify}
+          onPressedChange={() => editor.chain().focus().setTextAlign('justify').run()}>
+          <AlignJustify className="h-4 w-4" />
+        </Toggle>
+      </div>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      <div className="flex items-center gap-1">
+        <Toggle
+          size="sm"
           pressed={isBulletList}
           onPressedChange={() => editor.chain().focus().toggleBulletList().run()}>
           <List className="h-4 w-4" />
@@ -107,23 +174,60 @@ export function EditorToolbar() {
           onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}>
           <ListOrdered className="h-4 w-4" />
         </Toggle>
-      </div>
-
-      <Separator orientation="vertical" className="h-6" />
-
-      <div className="flex items-center gap-1">
         <Toggle
           size="sm"
           pressed={isBlockquote}
           onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}>
           <Quote className="h-4 w-4" />
         </Toggle>
-        <Toggle
-          size="sm"
-          pressed={isCode}
-          onPressedChange={() => editor.chain().focus().toggleCode().run()}>
-          <Code className="h-4 w-4" />
-        </Toggle>
+      </div>
+
+      <Separator orientation="vertical" className="h-6" />
+
+      <div className="flex items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <TableIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              onSelect={() =>
+                editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+              }>
+              Insert Table (3x3)
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowBefore().run()}>
+              Add Row Before
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowAfter().run()}>
+              Add Row After
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteRow().run()}>
+              Delete Row
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnBefore().run()}>
+              Add Column Before
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnAfter().run()}>
+              Add Column After
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteColumn().run()}>
+              Delete Column
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteTable().run()}>
+              Delete Table
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button variant="ghost" size="sm" onClick={() => setShowImageDialog(true)}>
+          <ImageIcon className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="ml-auto flex items-center gap-1">
@@ -142,6 +246,30 @@ export function EditorToolbar() {
           <Redo className="h-4 w-4" />
         </Button>
       </div>
+
+      {showImageDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-lg font-semibold mb-4">Insert Image</h3>
+            <input
+              type="text"
+              placeholder="Enter image URL"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md mb-4"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') insertImage();
+              }}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowImageDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={insertImage}>Insert</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
