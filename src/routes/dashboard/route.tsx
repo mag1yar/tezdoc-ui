@@ -1,13 +1,12 @@
-'use client';
-
 import { createFileRoute, Outlet, redirect, useLocation } from '@tanstack/react-router';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/shared/ui/sidebar';
-import { AppSidebar } from '@/features/dashboard/ui/app-sidebar';
 import { Separator } from '@/shared/ui/separator';
 import { SmartBreadcrumbs } from '@/shared/ui/smart-breadcrumbs';
 import { userFn } from '@/entities/user/api';
+import { DashboardSidebar } from '@/features/dashboard';
 
 export const Route = createFileRoute('/dashboard')({
+  ssr: false,
   beforeLoad: async () => {
     const user = await userFn();
 
@@ -34,7 +33,7 @@ function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <DashboardSidebar />
       <SidebarInset>
         {!isEditorPage && (
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">

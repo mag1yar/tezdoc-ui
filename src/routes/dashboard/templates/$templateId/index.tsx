@@ -24,7 +24,7 @@ import { Textarea } from '@/shared/ui/textarea';
 
 export const Route = createFileRoute('/dashboard/templates/$templateId/')({
   ssr: false,
-  component: TemplateEditorPage,
+
   loader: async ({ context: { queryClient }, params: { templateId } }) => {
     const template = await queryClient.fetchQuery({
       queryKey: ['templates', templateId],
@@ -39,6 +39,8 @@ export const Route = createFileRoute('/dashboard/templates/$templateId/')({
       },
     };
   },
+
+  component: TemplateEditorPage,
 });
 
 type Template = {

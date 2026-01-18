@@ -19,15 +19,12 @@ import {
 } from '@/shared/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import { ChevronsUpDown, FileText, Settings, Home, Plus } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
-
+import { Link, useRouteContext } from '@tanstack/react-router';
 import { logoutFn } from '@/features/auth/server';
 import { useRouter } from '@tanstack/react-router';
 
-import { Route } from '@/routes/dashboard';
-
-export function AppSidebar() {
-  const { user } = Route.useRouteContext();
+export function DashboardSidebar() {
+  const user = useRouteContext({ from: '/dashboard', select: ({ user }) => user });
   const router = useRouter();
 
   const handleLogout = async () => {

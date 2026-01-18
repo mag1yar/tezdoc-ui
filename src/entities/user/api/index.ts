@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { useAppSession } from '@/shared/lib/session';
 import ky from 'ky';
 import { env } from '@/env';
-import type { User } from '../model/types';
+import { userMeSchema } from '../model/schemas';
 
 const API_URL = env.SERVER_URL;
 
@@ -20,9 +20,9 @@ export const userFn = createServerFn({ method: 'GET' }).handler(async () => {
           Authorization: `Bearer ${session.data.accessToken}`,
         },
       })
-      .json<User>();
+      .json();
 
-    return user;
+    return userMeSchema.parse(user);
   } catch (e) {
     await session.clear();
 

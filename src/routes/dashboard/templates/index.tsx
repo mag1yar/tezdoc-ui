@@ -21,6 +21,7 @@ import { Textarea } from '@/shared/ui/textarea';
 
 export const Route = createFileRoute('/dashboard/templates/')({
   ssr: false,
+
   component: TemplatesPage,
 });
 

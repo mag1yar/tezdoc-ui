@@ -1,2 +1,3 @@
 export { userFn } from './api';
-export type { User, UserRole } from './model/types';
+export type { User, UserRole, UserMe } from './model/types';
+export { userMeSchema } from './model/schemas';
