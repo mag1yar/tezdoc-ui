@@ -5,16 +5,18 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/shared/ui/sideb
 import { AppSidebar } from '@/features/dashboard/ui/app-sidebar';
 import { Separator } from '@/shared/ui/separator';
 import { SmartBreadcrumbs } from '@/shared/ui/smart-breadcrumbs';
-import { userFn } from '@/features/auth/server';
+import { userFn } from '@/entities/user/api';
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: async () => {
     const user = await userFn();
+
     if (!user) {
       throw redirect({
         to: '/auth/login',
       });
     }
+
     return {
       user,
       breadcrumb: {
@@ -27,8 +29,7 @@ export const Route = createFileRoute('/dashboard')({
 
 function DashboardLayout() {
   const location = useLocation();
-  // Check if we are on the template editor page
-  // The path format is /dashboard/templates/UUID
+
   const isEditorPage = location.pathname.match(/\/dashboard\/templates\/[^/]+$/);
 
   return (

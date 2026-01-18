@@ -3,6 +3,8 @@ import { useAppSession } from '@/shared/lib/session';
 import ky from 'ky';
 import { env } from '@/env';
 
+import { User } from '@/entities/user/model/types';
+
 const API_URL = env.SERVER_URL;
 
 type LoginData = {
@@ -12,12 +14,7 @@ type LoginData = {
 
 type AuthResponse = {
   accessToken: string;
-  user: {
-    id: string;
-    email: string;
-    role: string;
-    orgId: string;
-  };
+  user: User;
 };
 
 export const loginFn = createServerFn({ method: 'POST' })
@@ -51,28 +48,4 @@ export const logoutFn = createServerFn({ method: 'POST' }).handler(async () => {
   await session.clear();
 
   return { success: true };
-});
-
-export const userFn = createServerFn({ method: 'GET' }).handler(async () => {
-  const session = await useAppSession();
-
-  if (!session.data.userId || !session.data.accessToken) {
-    return null;
-  }
-
-  try {
-    const user = await ky
-      .get(`${API_URL}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${session.data.accessToken}`,
-        },
-      })
-      .json<any>();
-
-    return user;
-  } catch (e) {
-    await session.clear();
-
-    return null;
-  }
 });
