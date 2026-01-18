@@ -70,8 +70,11 @@ export function Editor({ content, onChange, className, editable = true }: Editor
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto bg-slate-100 dark:bg-slate-900 py-8 px-4">
-          <EditorContent editor={editor} className="w-full h-full flex flex-col items-center" />
+        <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 py-8 px-4">
+          <EditorContent
+            editor={editor}
+            className="w-full h-full flex flex-col [&_.tiptap]:mx-auto [&_.tiptap]:h-max"
+          />
         </div>
       </div>
     </EditorContext.Provider>
