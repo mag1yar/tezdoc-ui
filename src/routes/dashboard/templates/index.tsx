@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
-import { api } from '@/shared/api/api';
+
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
@@ -19,38 +19,24 @@ import { Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Textarea } from '@/shared/ui/textarea';
 
+import { templateQueries } from '@/entities/template';
+
 export const Route = createFileRoute('/dashboard/templates/')({
   ssr: false,
 
   component: TemplatesPage,
 });
 
-type Template = {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
 function TemplatesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: templates, isLoading } = useQuery({
-    queryKey: ['templates'],
-    queryFn: async () => {
-      const data = await api.get('templates').json<Template[]>();
-      return data;
-    },
-  });
+  const { data: templates, isLoading } = useQuery(templateQueries.list());
 
   const createMutation = useMutation({
-    mutationFn: async (data: { name: string; description?: string }) => {
-      return await api.post('templates', { json: data }).json<Template>();
-    },
+    mutationFn: templateQueries.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['templates'] });
+      queryClient.invalidateQueries({ queryKey: templateQueries.all() });
       setIsDialogOpen(false);
       toast.success('Шаблон создан успешно!');
     },
@@ -67,7 +53,7 @@ function TemplatesPage() {
     onSubmit: async ({ value }) => {
       createMutation.mutate({
         name: value.name,
-        description: value.description || undefined,
+        description: value.description,
       });
     },
   });

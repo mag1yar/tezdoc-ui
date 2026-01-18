@@ -22,15 +22,14 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
 
+import { Template } from '@/entities/template/model/types';
+import { templateQueries } from '@/entities/template';
+
 export const Route = createFileRoute('/dashboard/templates/$templateId/')({
   ssr: false,
 
   loader: async ({ context: { queryClient }, params: { templateId } }) => {
-    const template = await queryClient.fetchQuery({
-      queryKey: ['templates', templateId],
-      queryFn: () => api.get(`templates/${templateId}`).json<Template>(),
-      staleTime: 10 * 1000,
-    });
+    const template = await queryClient.fetchQuery(templateQueries.detail(templateId));
 
     return {
       template,
@@ -43,34 +42,16 @@ export const Route = createFileRoute('/dashboard/templates/$templateId/')({
   component: TemplateEditorPage,
 });
 
-type Template = {
-  id: string;
-  name: string;
-  description?: string;
-  versions: {
-    content: any;
-    versionNumber: number;
-  }[];
-};
-
 function TemplateEditorPage() {
   const { templateId } = Route.useParams();
   const queryClient = useQueryClient();
   const [content, setContent] = useState<any>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Local state for settings form
   const [settingsForm, setSettingsForm] = useState({ name: '', description: '' });
 
-  // Use only useQuery for data (no loader dependency for protected data)
-  const { data: latestTemplate, isLoading } = useQuery({
-    queryKey: ['templates', templateId],
-    queryFn: async () => {
-      return await api.get(`templates/${templateId}`).json<Template>();
-    },
-  });
+  const { data: latestTemplate, isLoading } = useQuery(templateQueries.detail(templateId));
 
-  // Sync content if it wasn't set initially (e.g. first load)
   useEffect(() => {
     if (
       latestTemplate &&
@@ -98,7 +79,7 @@ function TemplateEditorPage() {
         .json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['templates', templateId] });
+      queryClient.invalidateQueries({ queryKey: templateQueries.detail(templateId).queryKey });
       toast.success('Сохранено');
       setIsSettingsOpen(false);
     },
