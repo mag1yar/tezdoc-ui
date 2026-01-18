@@ -16,12 +16,13 @@ import { toast } from 'sonner';
 import { loginFn } from '../server';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
 export function LoginForm() {
   const navigate = useNavigate();
+
   const form = useForm({
     defaultValues: {
       email: '',
@@ -38,19 +39,8 @@ export function LoginForm() {
           return;
         }
 
+        console.log(111, res);
         toast.success('Successfully logged in!');
-        // No manual navigation needed if server function handles redirect,
-        // BUT our loginFn does NOT redirect yet (it updates session).
-        // Let's check loginFn implementation again...
-        // Ah, current loginFn implementation returns user/success, doesn't throw redirect.
-        // So we should navigate here or update loginFn.
-        // Let's stick to client-side navigation for better UX control or refresh context?
-        // Wait, if we use separate server/client split, usually server func redirects.
-        // In the docs example, loginFn throws redirect.
-        // My implementation returned json. I should trust my implementation: returns { success: true, user }
-
-        // We need to invalidate router context or query cache to refresh session data?
-        // router.invalidate() is standard.
         await navigate({ to: '/dashboard' });
       } catch (error) {
         toast.error('Failed to login. Please check your credentials.');

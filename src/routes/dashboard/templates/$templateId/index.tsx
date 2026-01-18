@@ -22,7 +22,7 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
 
-export const Route = createFileRoute('/dashboard/templates/$templateId')({
+export const Route = createFileRoute('/dashboard/templates/$templateId/')({
   ssr: false,
   component: TemplateEditorPage,
   loader: async ({ context: { queryClient }, params: { templateId } }) => {

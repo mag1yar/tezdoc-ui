@@ -1,11 +1,9 @@
 import { createServerFn } from '@tanstack/react-start';
-// import { redirect } from '@tanstack/react-router';
 import { useAppSession } from '@/shared/lib/session';
 import ky from 'ky';
+import { env } from '@/env';
 
-// TODO: Move base URL to env or shared config
-// Server functions run on Node, so they can talk directly to backend
-const API_URL = 'http://localhost:4000/api';
+const API_URL = env.SERVER_URL;
 
 type LoginData = {
   email: string;
@@ -26,7 +24,7 @@ export const loginFn = createServerFn({ method: 'POST' })
   .inputValidator((data: LoginData) => data)
   .handler(async ({ data }) => {
     try {
-      const res = await ky
+      const { accessToken, user } = await ky
         .post(`${API_URL}/auth/login`, {
           json: data,
         })
@@ -34,14 +32,14 @@ export const loginFn = createServerFn({ method: 'POST' })
 
       const session = await useAppSession();
       await session.update({
-        accessToken: res.accessToken,
-        userId: res.user.id,
-        email: res.user.email,
-        orgId: res.user.orgId,
-        role: res.user.role,
+        accessToken,
+        userId: user.id,
+        email: user.email,
+        orgId: user.orgId,
+        role: user.role,
       });
 
-      return { success: true, user: res.user };
+      return { success: true, user };
     } catch (error) {
       console.error('Login failed:', error);
       return { error: 'Invalid credentials or server error' };
@@ -51,6 +49,7 @@ export const loginFn = createServerFn({ method: 'POST' })
 export const logoutFn = createServerFn({ method: 'POST' }).handler(async () => {
   const session = await useAppSession();
   await session.clear();
+
   return { success: true };
 });
 
@@ -61,9 +60,6 @@ export const userFn = createServerFn({ method: 'GET' }).handler(async () => {
     return null;
   }
 
-  // Optional: Validate token with backend /users/me if strictly needed,
-  // or trust the encrypted session for now to save a request.
-  // For better security/freshness, we should call /users/me.
   try {
     const user = await ky
       .get(`${API_URL}/auth/me`, {
@@ -72,10 +68,11 @@ export const userFn = createServerFn({ method: 'GET' }).handler(async () => {
         },
       })
       .json<any>();
+
     return user;
   } catch (e) {
-    // Token expired or invalid
     await session.clear();
+
     return null;
   }
 });
