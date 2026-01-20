@@ -308,7 +308,7 @@ export function EditorToolbar() {
 
   const renderItem = (item: ToolbarItem) => {
     if (item.type === 'separator') {
-      return <Separator orientation="vertical" className="h-4 mx-1" />;
+      return <Separator orientation="vertical" />;
     }
     if (item.type === 'custom' && item.render) {
       if (item.label) {
