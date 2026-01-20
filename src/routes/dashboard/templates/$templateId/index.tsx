@@ -37,6 +37,9 @@ function TemplateEditorPage() {
   const queryClient = useQueryClient();
 
   const [content, setContent] = useState<any>(null);
+  const [sampleData, setSampleData] = useState(
+    '{\n  "client": {\n    "name": "John Doe",\n    "address": "123 Main St",\n    "balance": 1500.50\n  },\n  "date": "2024-03-20"\n}',
+  );
 
   const { data: latestTemplate, isLoading } = useQuery(templateQueries.detail(templateId));
 
@@ -85,7 +88,11 @@ function TemplateEditorPage() {
           <SmartBreadcrumbs />
         </div>
         <div className="flex gap-2 shrink-0">
-          <TemplateSettingsDialog template={latestTemplate} />
+          <TemplateSettingsDialog
+            template={latestTemplate}
+            sampleData={sampleData}
+            onSampleDataChange={setSampleData}
+          />
           {updateMutation.isPending ? (
             <Button disabled size="sm">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -100,7 +107,7 @@ function TemplateEditorPage() {
         </div>
       </div>
 
-      <Editor content={content} onChange={setContent} className="h-full" />
+      <Editor content={content} onChange={setContent} className="h-full" sampleData={sampleData} />
     </div>
   );
 }

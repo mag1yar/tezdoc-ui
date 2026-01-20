@@ -17,6 +17,7 @@ import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 
 import { Template } from '@/entities/template/model/types';
 import { templateQueries } from '@/entities/template';
@@ -25,7 +26,14 @@ interface TemplateSettingsDialogProps {
   template: Template;
 }
 
-export function TemplateSettingsDialog({ template }: TemplateSettingsDialogProps) {
+export function TemplateSettingsDialog({
+  template,
+  sampleData,
+  onSampleDataChange,
+}: TemplateSettingsDialogProps & {
+  sampleData: string;
+  onSampleDataChange: (data: string) => void;
+}) {
   const [opened, { close, toggle }] = useDisclosure(false);
 
   const queryClient = useQueryClient();
@@ -61,6 +69,22 @@ export function TemplateSettingsDialog({ template }: TemplateSettingsDialogProps
     });
   };
 
+  const [json, setJson] = useState(sampleData);
+
+  useEffect(() => {
+    setJson(sampleData);
+  }, [sampleData]);
+
+  const handleSaveJson = () => {
+    try {
+      JSON.parse(json); // Validate JSON
+      onSampleDataChange(json);
+      toast.success('Data Source обновлен');
+    } catch (e) {
+      toast.error('Невалидный JSON');
+    }
+  };
+
   return (
     <Dialog open={opened} onOpenChange={toggle}>
       <DialogTrigger asChild>
@@ -69,41 +93,71 @@ export function TemplateSettingsDialog({ template }: TemplateSettingsDialogProps
           Настройки
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Настройки шаблона</DialogTitle>
-          <DialogDescription>Измените название и описание шаблона.</DialogDescription>
+          <DialogDescription>Измените название, описание и тестовые данные.</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Название
-            </Label>
-            <Input
-              id="name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">
-              Описание
-            </Label>
-            <Textarea
-              id="description"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={handleSave} disabled={updateMutation.isPending}>
-            {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Сохранить
-          </Button>
-        </DialogFooter>
+
+        <Tabs defaultValue="general" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="general">Общие</TabsTrigger>
+            <TabsTrigger value="data">Data Source</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general">
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Название
+                </Label>
+                <Input
+                  id="name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Описание
+                </Label>
+                <Textarea
+                  id="description"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleSave} disabled={updateMutation.isPending}>
+                {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Сохранить
+              </Button>
+            </DialogFooter>
+          </TabsContent>
+
+          <TabsContent value="data" className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>JSON Sample Data</Label>
+              <p className="text-sm text-muted-foreground">
+                Эти данные используются для автодополнения переменных ({'{{'}}) и предпросмотра.
+              </p>
+              <Textarea
+                className="font-mono h-[300px]"
+                value={json}
+                onChange={(e) => setJson(e.target.value)}
+                placeholder={'{\n  "title": "Document",\n  "date": "2024-01-01"\n}'}
+              />
+            </div>
+            <DialogFooter>
+               <Button onClick={handleSaveJson} disabled={json === sampleData}>
+                  Сохранить JSON
+               </Button>
+            </DialogFooter>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

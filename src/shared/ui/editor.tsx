@@ -4,29 +4,32 @@ import { cn } from '../lib/utils';
 import { EditorToolbar } from './editor-toolbar';
 import { useTheme } from 'next-themes';
 import { getEditorExtensions } from './editor/extensions';
-import { EditorSidebar } from './editor/editor-sidebar';
 import { generatePreviewJson } from '../lib/doc-generator/client-generator';
-import { PanelRight, Eye, Pencil } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 import { Button } from './button';
 import { EditorBubbleMenu } from './editor/editor-bubble-menu';
 import { VariableSettingsDialog } from './editor/variable-settings-dialog';
 import type { VariableAttributes } from './editor/extensions/variable-extension';
+import { extractVariables } from '../lib/variable-utils';
 
 interface EditorProps {
   content: string | Record<string, any>;
   onChange: (content: Record<string, any>) => void;
   className?: string;
   editable?: boolean;
+  sampleData?: string;
 }
 
-export function Editor({ content, onChange, className, editable = true }: EditorProps) {
+export function Editor({
+  content,
+  onChange,
+  className,
+  editable = true,
+  sampleData = '{}',
+}: EditorProps) {
   const { theme } = useTheme();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const isPreviewModeRef = useRef(false); // Ref to track preview mode in callbacks
-  const [sampleData, setSampleData] = useState(
-    '{\n  "client": {\n    "name": "John Doe",\n    "address": "123 Main St",\n    "balance": 1500.50\n  },\n  "date": "2024-03-20"\n}',
-  );
 
   // Dialog state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -39,47 +42,59 @@ export function Editor({ content, onChange, className, editable = true }: Editor
     isPreviewModeRef.current = isPreviewMode;
   }, [isPreviewMode]);
 
-  const editor = useEditor({
-    extensions: getEditorExtensions({ theme }),
-    content: content || '',
-    editable: editable && !isPreviewMode, // Disable editing in preview mode
-    editorProps: {
-      attributes: {
-        class: cn('mx-auto bg-white dark:bg-slate-950 outline-none'),
-      },
-      handleDrop: (view, event, _slice, moved) => {
-        if (!moved && event.dataTransfer && event.dataTransfer.getData('application/json')) {
-          const text = event.dataTransfer.getData('application/json');
-          try {
-            const data = JSON.parse(text);
-            if (data.type === 'variable') {
-              event.preventDefault();
-              const { id, label, varType } = data;
-              const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
-              if (coordinates) {
-                view.dispatch(
-                  view.state.tr.insert(
-                    coordinates.pos,
-                    view.state.schema.nodes.variable.create({ id, label, type: varType }),
-                  ),
-                );
-                return true;
+  const variables = useMemo(() => {
+    try {
+      if (!sampleData) return [];
+      return extractVariables(JSON.parse(sampleData));
+    } catch (e) {
+      return [];
+    }
+  }, [sampleData]);
+
+  const editor = useEditor(
+    {
+      extensions: getEditorExtensions({ theme, variables }),
+      content: content || '',
+      editable: editable && !isPreviewMode, // Disable editing in preview mode
+      editorProps: {
+        attributes: {
+          class: cn('mx-auto bg-white dark:bg-slate-950 outline-none'),
+        },
+        handleDrop: (view, event, _slice, moved) => {
+          if (!moved && event.dataTransfer && event.dataTransfer.getData('application/json')) {
+            const text = event.dataTransfer.getData('application/json');
+            try {
+              const data = JSON.parse(text);
+              if (data.type === 'variable') {
+                event.preventDefault();
+                const { id, label, varType } = data;
+                const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+                if (coordinates) {
+                  view.dispatch(
+                    view.state.tr.insert(
+                      coordinates.pos,
+                      view.state.schema.nodes.variable.create({ id, label, type: varType }),
+                    ),
+                  );
+                  return true;
+                }
               }
+            } catch (e) {
+              console.error('Drop error', e);
             }
-          } catch (e) {
-            console.error('Drop error', e);
           }
+          return false;
+        },
+      },
+      onUpdate: ({ editor }) => {
+        // Use ref to avoid stale closure
+        if (!isPreviewModeRef.current) {
+          onChange(editor.getJSON());
         }
-        return false;
       },
     },
-    onUpdate: ({ editor }) => {
-      // Use ref to avoid stale closure
-      if (!isPreviewModeRef.current) {
-        onChange(editor.getJSON());
-      }
-    },
-  });
+    [theme, variables],
+  ); // Re-create editor when variables change to update suggestion list
 
   const providerValue = useMemo(() => ({ editor }), [editor]);
 
@@ -169,15 +184,6 @@ export function Editor({ content, onChange, className, editable = true }: Editor
                   {isPreviewMode ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   <span className="hidden sm:inline">{isPreviewMode ? 'Edit' : 'Preview'}</span>
                 </Button>
-                <Button
-                  variant={isSidebarOpen ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="gap-2"
-                  disabled={isPreviewMode}>
-                  <PanelRight className="h-4 w-4" />
-                  <span className="hidden sm:inline">Data</span>
-                </Button>
               </div>
             </div>
           )}
@@ -190,16 +196,6 @@ export function Editor({ content, onChange, className, editable = true }: Editor
             <EditorContent editor={editor} className="w-full h-full" />
           </div>
         </div>
-
-        {editable && (
-          <EditorSidebar
-            editor={editor}
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-            sampleData={sampleData}
-            onSampleDataChange={setSampleData}
-          />
-        )}
 
         <VariableSettingsDialog
           isOpen={isSettingsOpen}

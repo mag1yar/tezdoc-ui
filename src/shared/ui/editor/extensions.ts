@@ -8,12 +8,15 @@ import { Underline } from '@tiptap/extension-underline';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { PAGE_SIZES, PaginationPlus } from 'tiptap-pagination-plus';
 import { VariableExtension } from './extensions/variable-extension';
+import { VariableSuggestion } from './extensions/variable-suggestion';
+import { VariableDefinition } from '@/shared/lib/variable-utils';
 
 interface GetExtensionsProps {
   theme?: string;
+  variables?: VariableDefinition[];
 }
 
-export const getEditorExtensions = ({ theme }: GetExtensionsProps) => [
+export const getEditorExtensions = ({ theme, variables = [] }: GetExtensionsProps) => [
   StarterKit.configure({
     dropcursor: {
       width: 2,
@@ -36,4 +39,7 @@ export const getEditorExtensions = ({ theme }: GetExtensionsProps) => [
     pageBreakBackground: theme === 'dark' ? 'var(--color-slate-900)' : 'var(--color-slate-100)',
   }),
   VariableExtension,
+  VariableSuggestion.configure({
+    variables,
+  }),
 ];
