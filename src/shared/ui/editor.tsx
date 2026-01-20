@@ -39,9 +39,7 @@ export function Editor({ content, onChange, className, editable = true }: Editor
     editable: editable && !isPreviewMode, // Disable editing in preview mode
     editorProps: {
       attributes: {
-        class: cn(
-          'w-full max-w-[210mm] min-h-[297mm] mx-auto bg-white dark:bg-slate-950 shadow-sm p-[20mm] outline-none',
-        ),
+        class: cn('mx-auto bg-white dark:bg-slate-950 outline-none'),
       },
       handleDrop: (view, event, _slice, moved) => {
         if (!moved && event.dataTransfer && event.dataTransfer.getData('application/json')) {
