@@ -1,5 +1,4 @@
 import { useEditor, EditorContent, EditorContext } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/react/menus';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { cn } from '../lib/utils';
 import { EditorToolbar } from './editor-toolbar';
@@ -9,6 +8,9 @@ import { EditorSidebar } from './editor/editor-sidebar';
 import { generatePreviewJson } from '../lib/doc-generator/client-generator';
 import { PanelRight, Eye, Pencil } from 'lucide-react';
 import { Button } from './button';
+import { EditorBubbleMenu } from './editor/editor-bubble-menu';
+import { VariableSettingsDialog } from './editor/variable-settings-dialog';
+import type { VariableAttributes } from './editor/extensions/variable-extension';
 
 interface EditorProps {
   content: string | Record<string, any>;
@@ -25,6 +27,10 @@ export function Editor({ content, onChange, className, editable = true }: Editor
   const [sampleData, setSampleData] = useState(
     '{\n  "client": {\n    "name": "John Doe",\n    "address": "123 Main St",\n    "balance": 1500.50\n  },\n  "date": "2024-03-20"\n}',
   );
+
+  // Dialog state
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [currentVariableAttrs, setCurrentVariableAttrs] = useState<VariableAttributes | null>(null);
 
   // Store the original template content to restore after preview
   const [templateContent, setTemplateContent] = useState<Record<string, any> | null>(null);
@@ -131,6 +137,20 @@ export function Editor({ content, onChange, className, editable = true }: Editor
     }
   };
 
+  const handleOpenVariableSettings = () => {
+    if (editor && editor.isActive('variable')) {
+      const { attrs } = editor.getAttributes('variable');
+      setCurrentVariableAttrs(attrs as VariableAttributes);
+      setIsSettingsOpen(true);
+    }
+  };
+
+  const handleSaveVariableSettings = (values: Partial<VariableAttributes>) => {
+    if (editor) {
+      editor.chain().focus().updateAttributes('variable', values).run();
+    }
+  };
+
   if (!editor) return null;
 
   return (
@@ -163,34 +183,7 @@ export function Editor({ content, onChange, className, editable = true }: Editor
           )}
 
           {editor && !isPreviewMode && (
-            <BubbleMenu editor={editor}>
-              <div className="bg-background border rounded shadow-md p-1 flex gap-1">
-                <button
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={cn(
-                    'px-2 py-1 hover:bg-muted rounded text-sm',
-                    editor.isActive('bold') ? 'bg-muted' : '',
-                  )}>
-                  Bold
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={cn(
-                    'px-2 py-1 hover:bg-muted rounded text-sm',
-                    editor.isActive('italic') ? 'bg-muted' : '',
-                  )}>
-                  Italic
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().toggleStrike().run()}
-                  className={cn(
-                    'px-2 py-1 hover:bg-muted rounded text-sm',
-                    editor.isActive('strike') ? 'bg-muted' : '',
-                  )}>
-                  Strike
-                </button>
-              </div>
-            </BubbleMenu>
+            <EditorBubbleMenu editor={editor} onOpenVariableSettings={handleOpenVariableSettings} />
           )}
 
           <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 py-8 px-4">
@@ -207,6 +200,13 @@ export function Editor({ content, onChange, className, editable = true }: Editor
             onSampleDataChange={setSampleData}
           />
         )}
+
+        <VariableSettingsDialog
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          initialValues={currentVariableAttrs}
+          onSave={handleSaveVariableSettings}
+        />
       </div>
     </EditorContext.Provider>
   );
