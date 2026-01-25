@@ -1,4 +1,5 @@
 import ky from 'ky';
+import { useAuthStore } from '@/shared/lib/use-auth-store';
 
 export const api = ky.create({
   prefixUrl: 'http://localhost:4000/api',
@@ -9,7 +10,7 @@ export const api = ky.create({
     beforeRequest: [
       (request) => {
         if (typeof window !== 'undefined') {
-          const token = localStorage.getItem('accessToken');
+          const token = useAuthStore.getState().accessToken;
           if (token) {
             request.headers.set('Authorization', `Bearer ${token}`);
           }
@@ -20,7 +21,7 @@ export const api = ky.create({
       async (_request, _options, response) => {
         if (response.status === 401 && typeof window !== 'undefined') {
           // Логика разлогина или рефреша
-          localStorage.removeItem('accessToken');
+          useAuthStore.getState().clearToken();
           window.location.href = '/auth/login';
         }
       },

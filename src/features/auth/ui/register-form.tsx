@@ -14,10 +14,11 @@ import {
 } from '@/shared/ui/card';
 import { toast } from 'sonner';
 import { api } from '@/shared/api/api';
+import { useAuthStore } from '@/shared/lib/use-auth-store';
 
 const registerSchema = z
   .object({
-    email: z.string().email('Invalid email address'),
+    email: z.email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
     orgName: z.string().min(2, 'Organization name must be at least 2 characters'),
@@ -30,6 +31,8 @@ const registerSchema = z
 
 export function RegisterForm() {
   const navigate = useNavigate();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+
   const form = useForm({
     defaultValues: {
       email: '',
@@ -48,7 +51,7 @@ export function RegisterForm() {
         const { confirmPassword, ...dataToSend } = value;
 
         const res = await api.post('auth/register', { json: dataToSend }).json<any>();
-        localStorage.setItem('accessToken', res.accessToken);
+        setAccessToken(res.accessToken);
         toast.success('Registration successful! Welcome to TezDoc.');
         navigate({ to: '/dashboard' });
       } catch (error) {

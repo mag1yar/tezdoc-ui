@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui/card';
 import { toast } from 'sonner';
 import { loginFn } from '../server';
+import { useAuthStore } from '@/shared/lib/use-auth-store';
 
 const loginSchema = z.object({
   email: z.email('Invalid email address'),
@@ -22,6 +23,7 @@ const loginSchema = z.object({
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const form = useForm({
     defaultValues: {
@@ -39,7 +41,10 @@ export function LoginForm() {
           return;
         }
 
-        console.log(111, res);
+        if (res.accessToken) {
+          setAccessToken(res.accessToken);
+        }
+
         toast.success('Successfully logged in!');
         await navigate({ to: '/dashboard' });
       } catch (error) {

@@ -36,7 +36,7 @@ export const loginFn = createServerFn({ method: 'POST' })
         role: user.role,
       });
 
-      return { success: true, user };
+      return { success: true, user, accessToken };
     } catch (error) {
       console.error('Login failed:', error);
       return { error: 'Invalid credentials or server error' };
