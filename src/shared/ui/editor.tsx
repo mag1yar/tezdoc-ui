@@ -108,7 +108,7 @@ export function Editor({
   useEffect(() => {
     if (editor && content && !editor.isDestroyed && !isPreviewMode) {
       if (editor.isEmpty) {
-        editor.commands.setContent(content);
+        editor.chain().setContent(content).setMeta('addToHistory', false).run();
         return;
       }
 
