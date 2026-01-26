@@ -115,7 +115,11 @@ export const VariableSuggestion = Extension.create({
               editor = props.editor;
 
               component = new ReactRenderer(VariableSuggestionList, {
-                props,
+                props: {
+                    ...props,
+                    editor: props.editor,
+                    range: props.range
+                },
                 editor: props.editor,
               });
 
@@ -167,7 +171,11 @@ export const VariableSuggestion = Extension.create({
               }
 
               if (!popup || !component) return;
-              component.updateProps(props);
+              component.updateProps({
+                ...props,
+                editor: props.editor,
+                range: props.range,
+              });
 
               if (!props.clientRect) return;
 

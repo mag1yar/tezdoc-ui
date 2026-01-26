@@ -1,11 +1,14 @@
 import { VariableDefinition } from '@/shared/lib/variable-utils';
 import { cn } from '@/shared/lib/utils';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { Editor } from '@tiptap/react';
 
 export interface VariableSuggestionListProps {
   items: VariableDefinition[];
   command: (item: any) => void;
   query?: string;
+  editor: Editor;
+  range: { from: number; to: number };
 }
 
 export interface VariableSuggestionListRef {
@@ -47,6 +50,23 @@ export const VariableSuggestionList = forwardRef<
     }
   };
 
+  const autocompleteItem = (index: number) => {
+      // If "Create new" is selected, we just keep what is typed (or maybe fill the query?)
+      // For now, only autocomplete existing items
+      if (index < props.items.length) {
+          const item = props.items[index];
+          if (item) {
+            // Replace the current range (e.g. "{{cl") with full text "{{client.name"
+            // This allows the user to continue typing
+            props.editor
+                .chain()
+                .focus()
+                .insertContentAt(props.range, `{{${item.id}`)
+                .run();
+          }
+      }
+  };
+
   const upHandler = () => {
     setSelectedIndex((selectedIndex + totalItems - 1) % totalItems);
   };
@@ -57,6 +77,10 @@ export const VariableSuggestionList = forwardRef<
 
   const enterHandler = () => {
     selectItem(selectedIndex);
+  };
+
+  const tabHandler = () => {
+    autocompleteItem(selectedIndex);
   };
 
   useEffect(() => {
@@ -76,7 +100,14 @@ export const VariableSuggestionList = forwardRef<
       }
 
       if (event.key === 'Enter') {
+        // If create option is selected, Enter creates.
+        // If item is selected, Enter creates node (standard behavior).
         enterHandler();
+        return true;
+      }
+
+      if (event.key === 'Tab') {
+        tabHandler();
         return true;
       }
 
