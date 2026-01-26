@@ -366,7 +366,7 @@ export function EditorToolbar() {
   };
 
   return (
-    <div className="border-b bg-background p-2 flex gap-2 items-center sticky top-0 z-10 w-full">
+    <div className="bg-background p-2 flex gap-2 items-center sticky top-0 z-10 w-full">
       <Overflow
         items={toolbarItems}
         keyExtractor={(item) => item.id}

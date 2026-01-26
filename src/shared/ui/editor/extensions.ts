@@ -4,7 +4,6 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { Image } from '@tiptap/extension-image';
-import { Underline } from '@tiptap/extension-underline';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { PAGE_SIZES, PaginationPlus } from 'tiptap-pagination-plus';
 import { VariableExtension } from './extensions/variable-extension';
@@ -31,7 +30,6 @@ export const getEditorExtensions = ({ theme, getVariables, onAddVariable }: GetE
   TableHeader,
   TableCell,
   Image,
-  Underline,
   TextAlign.configure({
     types: ['heading', 'paragraph'],
   }),
