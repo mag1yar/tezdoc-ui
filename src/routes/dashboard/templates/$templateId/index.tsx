@@ -107,7 +107,7 @@ function TemplateEditorPage() {
         </div>
       </div>
 
-      <Editor content={content} onChange={setContent} className="h-full" sampleData={sampleData} />
+      <Editor content={content} onChange={setContent} className="h-full" sampleData={sampleData} onSampleDataChange={setSampleData} />
     </div>
   );
 }

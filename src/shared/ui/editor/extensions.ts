@@ -13,10 +13,11 @@ import { VariableDefinition } from '@/shared/lib/variable-utils';
 
 interface GetExtensionsProps {
   theme?: string;
-  variables?: VariableDefinition[];
+  getVariables: () => VariableDefinition[];
+  onAddVariable?: (variableId: string) => void;
 }
 
-export const getEditorExtensions = ({ theme, variables = [] }: GetExtensionsProps) => [
+export const getEditorExtensions = ({ theme, getVariables, onAddVariable }: GetExtensionsProps) => [
   StarterKit.configure({
     dropcursor: {
       width: 2,
@@ -40,6 +41,7 @@ export const getEditorExtensions = ({ theme, variables = [] }: GetExtensionsProp
   }),
   VariableExtension,
   VariableSuggestion.configure({
-    variables,
+    getVariables,
+    onAddVariable,
   }),
 ];

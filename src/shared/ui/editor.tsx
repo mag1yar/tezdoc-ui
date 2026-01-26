@@ -11,6 +11,7 @@ import { EditorBubbleMenu } from './editor/editor-bubble-menu';
 import { VariableSettingsDialog } from './editor/variable-settings-dialog';
 import type { VariableAttributes } from './editor/extensions/variable-extension';
 import { extractVariables } from '../lib/variable-utils';
+import { setNestedValue } from '../lib/add-nested-field';
 
 interface EditorProps {
   content: string | Record<string, any>;
@@ -18,6 +19,7 @@ interface EditorProps {
   className?: string;
   editable?: boolean;
   sampleData?: string;
+  onSampleDataChange?: (data: string) => void;
 }
 
 export function Editor({
@@ -26,6 +28,7 @@ export function Editor({
   className,
   editable = true,
   sampleData = '{}',
+  onSampleDataChange,
 }: EditorProps) {
   const { theme } = useTheme();
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -51,9 +54,37 @@ export function Editor({
     }
   }, [sampleData]);
 
+  // Use refs to pass dynamic values to extensions without recreating them
+  const variablesRef = useRef(variables);
+  useEffect(() => {
+    variablesRef.current = variables;
+  }, [variables]);
+
+  const onSampleDataChangeRef = useRef(onSampleDataChange);
+  useEffect(() => {
+    onSampleDataChangeRef.current = onSampleDataChange;
+  }, [onSampleDataChange]);
+
+  // Stable callback for extensions
+  const getVariables = useRef(() => variablesRef.current).current;
+
+  // Handler for adding new variables to sample data
+  const handleAddVariable = (variableId: string) => {
+    if (!onSampleDataChangeRef.current) return;
+
+    try {
+      const currentData = sampleData ? JSON.parse(sampleData) : {};
+      const updatedData = setNestedValue(currentData, variableId, '');
+      // No need for setTimeout anymore as we don't recreate the editor
+      onSampleDataChangeRef.current(JSON.stringify(updatedData, null, 2));
+    } catch (e) {
+      console.error('Failed to add variable to sample data', e);
+    }
+  };
+
   const editor = useEditor(
     {
-      extensions: getEditorExtensions({ theme, variables }),
+      extensions: getEditorExtensions({ theme, getVariables, onAddVariable: handleAddVariable }),
       content: content || '',
       editable: editable && !isPreviewMode, // Disable editing in preview mode
       editorProps: {
@@ -93,8 +124,8 @@ export function Editor({
         }
       },
     },
-    [theme, variables],
-  ); // Re-create editor when variables change to update suggestion list
+    [theme], // Removed variables from dependencies to prevent recreation
+  );
 
   const providerValue = useMemo(() => ({ editor }), [editor]);
 

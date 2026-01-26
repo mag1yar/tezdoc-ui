@@ -142,7 +142,7 @@ export function TemplateSettingsDialog({
             <div className="space-y-2">
               <Label>JSON Sample Data</Label>
               <p className="text-sm text-muted-foreground">
-                Эти данные используются для автодополнения переменных ({'{{'}}) и предпросмотра.
+                Эти данные используются для автодополнения переменных (&#123;&#123;) и предпросмотра.
               </p>
               <Textarea
                 className="font-mono h-[300px]"

@@ -16,7 +16,7 @@ export function extractVariables(data: Record<string, any>, prefix = ''): Variab
 
       variables.push({
         id: path,
-        label: key,
+        label: path, // Use full path as label so editor shows 'client.name' instead of 'name'
         type,
         value,
       });

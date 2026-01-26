@@ -5,6 +5,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 export interface VariableSuggestionListProps {
   items: VariableDefinition[];
   command: (item: any) => void;
+  query?: string;
 }
 
 export interface VariableSuggestionListRef {
@@ -16,8 +17,30 @@ export const VariableSuggestionList = forwardRef<
   VariableSuggestionListProps
 >((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  
+  // Show "Create" option when there's a query but no exact match
+  const hasCreateOption = Boolean(
+    props.query && 
+    props.query.trim().length > 0 && 
+    !props.items.some(item => item.id.toLowerCase() === props.query?.toLowerCase())
+  );
+  
+  const totalItems = props.items.length + (hasCreateOption ? 1 : 0);
+  const createOptionIndex = props.items.length; // Last item if showing
 
   const selectItem = (index: number) => {
+    // Handle "Create new" selection
+    if (hasCreateOption && index === createOptionIndex) {
+      const newVarId = props.query!.trim();
+      props.command({ 
+        id: newVarId, 
+        label: newVarId, 
+        type: 'string',
+        isNew: true 
+      });
+      return;
+    }
+    
     const item = props.items[index];
     if (item) {
       props.command({ id: item.id, label: item.label, type: item.type });
@@ -25,11 +48,11 @@ export const VariableSuggestionList = forwardRef<
   };
 
   const upHandler = () => {
-    setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
+    setSelectedIndex((selectedIndex + totalItems - 1) % totalItems);
   };
 
   const downHandler = () => {
-    setSelectedIndex((selectedIndex + 1) % props.items.length);
+    setSelectedIndex((selectedIndex + 1) % totalItems);
   };
 
   const enterHandler = () => {
@@ -38,7 +61,7 @@ export const VariableSuggestionList = forwardRef<
 
   useEffect(() => {
     setSelectedIndex(0);
-  }, [props.items]);
+  }, [props.items, props.query]);
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }) => {
@@ -69,7 +92,8 @@ export const VariableSuggestionList = forwardRef<
     }
   }, [selectedIndex]);
 
-  if (props.items.length === 0) {
+  // Show popup if there are items OR if we can create a new variable
+  if (props.items.length === 0 && !hasCreateOption) {
     return null;
   }
 
@@ -110,6 +134,29 @@ export const VariableSuggestionList = forwardRef<
             </div>
           </button>
         ))}
+        
+        {/* Create new variable option */}
+        {hasCreateOption && (
+          <button
+            className={cn(
+              'relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none border-t border-border mt-1 pt-2',
+              selectedIndex === createOptionIndex
+                ? 'bg-accent text-accent-foreground'
+                : 'hover:bg-accent hover:text-accent-foreground',
+            )}
+            onClick={() => selectItem(createOptionIndex)}>
+            <div className="flex items-center gap-2 overflow-hidden w-full">
+              <div className="h-5 w-5 rounded flex items-center justify-center text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 shrink-0">
+                +
+              </div>
+              <div className="flex flex-col items-start min-w-0 flex-1">
+                <span className="truncate w-full font-medium">
+                  Создать "{props.query}"
+                </span>
+              </div>
+            </div>
+          </button>
+        )}
       </div>
     </div>
   );

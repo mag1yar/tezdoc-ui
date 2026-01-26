@@ -11,10 +11,27 @@ export const VariableSuggestion = Extension.create({
 
   addOptions() {
     return {
-      suggestion: {
-        char: '{{',
-        pluginKey: new PluginKey('variableSuggestion'),
+      char: '{{',
+      pluginKey: new PluginKey('variableSuggestion'),
+      getVariables: () => [] as VariableDefinition[],
+      onAddVariable: undefined as ((variableId: string) => void) | undefined,
+    };
+  },
+
+  addProseMirrorPlugins() {
+    const { onAddVariable, getVariables } = this.options;
+    
+    return [
+      Suggestion({
+        editor: this.editor,
+        char: this.options.char,
+        pluginKey: this.options.pluginKey,
         command: ({ editor, range, props }: any) => {
+          // If this is a new variable, call the callback to add it to sample data
+          if (props.isNew && onAddVariable) {
+            onAddVariable(props.id);
+          }
+          
           editor
             .chain()
             .focus()
@@ -26,18 +43,9 @@ export const VariableSuggestion = Extension.create({
             })
             .run();
         },
-      },
-      variables: [] as VariableDefinition[],
-    };
-  },
-
-  addProseMirrorPlugins() {
-    return [
-      Suggestion({
-        editor: this.editor,
-        ...this.options.suggestion,
         items: ({ query }: { query: string }) => {
-          return this.options.variables.filter((item: VariableDefinition) =>
+          // Return filtered items - the query is passed to render via props
+          return getVariables().filter((item: VariableDefinition) =>
             item.id.toLowerCase().includes(query.toLowerCase()),
           );
         },
