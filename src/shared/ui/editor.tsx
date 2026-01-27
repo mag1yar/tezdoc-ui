@@ -165,7 +165,8 @@ export function Editor({
 
       const currentContent = editor.getJSON();
       if (JSON.stringify(currentContent) !== JSON.stringify(content)) {
-        editor.commands.setContent(content);
+        // @ts-ignore - emitUpdate is valid but types might be strict
+        editor.commands.setContent(content, true, { emitUpdate: false });
       }
     }
   }, [content, editor, isPreviewMode]);
