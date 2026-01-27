@@ -9,6 +9,7 @@ export const templateSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   description: z.string().optional(),
+  sampleData: z.string().optional().nullable(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
   versions: z.array(templateVersionSchema).optional(),

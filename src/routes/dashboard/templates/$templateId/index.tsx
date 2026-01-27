@@ -37,22 +37,22 @@ function TemplateEditorPage() {
   const queryClient = useQueryClient();
 
   const [content, setContent] = useState<any>(null);
-  const [sampleData, setSampleData] = useState(
-    '{\n  "client": {\n    "name": "John Doe",\n    "address": "123 Main St",\n    "balance": 1500.50\n  },\n  "date": "2024-03-20"\n}',
-  );
+  const [sampleData, setSampleData] = useState<string | null>(null); // Will be loaded from template
+
+  const defaultSampleData = '{\n  "client": {\n    "name": "John Doe",\n    "address": "123 Main St",\n    "balance": 1500.50\n  },\n  "date": "2024-03-20"\n}';
+
 
   const { data: latestTemplate, isLoading } = useQuery(templateQueries.detail(templateId));
 
   useEffect(() => {
-    if (
-      latestTemplate &&
-      !content &&
-      latestTemplate.versions &&
-      latestTemplate.versions.length > 0
-    ) {
+    if (latestTemplate && !content && latestTemplate.versions && latestTemplate.versions.length > 0) {
       setContent(latestTemplate.versions[0].content);
     }
-  }, [latestTemplate, content]);
+    // Load sampleData from backend (only once)
+    if (latestTemplate && sampleData === null) {
+      setSampleData(latestTemplate.sampleData || defaultSampleData);
+    }
+  }, [latestTemplate, content, sampleData]);
 
   const updateMutation = useMutation({
     mutationFn: (data: Partial<Template> & { content?: any }) =>
@@ -68,8 +68,13 @@ function TemplateEditorPage() {
 
   const handleSave = () => {
     if (content) {
-      updateMutation.mutate({ content });
+      updateMutation.mutate({ content, sampleData: sampleData || defaultSampleData });
     }
+  };
+
+  // Auto-save sampleData when a new variable is created dynamically
+  const handleAutoSaveSampleData = (newSampleData: string) => {
+    updateMutation.mutate({ sampleData: newSampleData });
   };
 
   if (isLoading || !latestTemplate) {
@@ -90,7 +95,7 @@ function TemplateEditorPage() {
         <div className="flex gap-2 shrink-0">
           <TemplateSettingsDialog
             template={latestTemplate}
-            sampleData={sampleData}
+            sampleData={sampleData ?? defaultSampleData}
             onSampleDataChange={setSampleData}
           />
           {updateMutation.isPending ? (
@@ -107,7 +112,14 @@ function TemplateEditorPage() {
         </div>
       </div>
 
-      <Editor content={content} onChange={setContent} className="h-full" sampleData={sampleData} onSampleDataChange={setSampleData} />
+      <Editor 
+        content={content} 
+        onChange={setContent} 
+        className="h-full" 
+        sampleData={sampleData ?? defaultSampleData} 
+        onSampleDataChange={setSampleData} 
+        onAutoSaveSampleData={handleAutoSaveSampleData}
+      />
     </div>
   );
 }

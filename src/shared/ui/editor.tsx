@@ -20,6 +20,7 @@ interface EditorProps {
   editable?: boolean;
   sampleData?: string;
   onSampleDataChange?: (data: string) => void;
+  onAutoSaveSampleData?: (data: string) => void;
 }
 
 export function Editor({
@@ -29,6 +30,7 @@ export function Editor({
   editable = true,
   sampleData = '{}',
   onSampleDataChange,
+  onAutoSaveSampleData,
 }: EditorProps) {
   const { theme } = useTheme();
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -75,8 +77,12 @@ export function Editor({
     try {
       const currentData = sampleData ? JSON.parse(sampleData) : {};
       const updatedData = setNestedValue(currentData, variableId, '');
-      // No need for setTimeout anymore as we don't recreate the editor
-      onSampleDataChangeRef.current(JSON.stringify(updatedData, null, 2));
+      const newSampleData = JSON.stringify(updatedData, null, 2);
+      onSampleDataChangeRef.current(newSampleData);
+      // Auto-save to backend if callback provided
+      if (onAutoSaveSampleData) {
+        onAutoSaveSampleData(newSampleData);
+      }
     } catch (e) {
       console.error('Failed to add variable to sample data', e);
     }

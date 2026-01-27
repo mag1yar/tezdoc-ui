@@ -79,7 +79,8 @@ export function TemplateSettingsDialog({
     try {
       JSON.parse(json); // Validate JSON
       onSampleDataChange(json);
-      toast.success('Data Source обновлен');
+      // Save to backend
+      updateMutation.mutate({ sampleData: json });
     } catch (e) {
       toast.error('Невалидный JSON');
     }
